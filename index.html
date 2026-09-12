@@ -36,7 +36,7 @@
       padding-bottom: 50px;
     }
 
-    /* Header & Navbar */
+    /* Header & Brand */
     header {
       position: sticky;
       top: 0;
@@ -51,19 +51,21 @@
       gap: 20px;
     }
 
+    /* Tightened Brand Logo */
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 0;
       font-weight: 800;
-      font-size: 1.6rem;
-      letter-spacing: -0.5px;
+      font-size: 1.8rem;
+      letter-spacing: -1.2px;
       color: var(--text-main);
       text-decoration: none;
     }
 
     .brand span {
       color: var(--accent-red);
+      margin-left: 0px;
     }
 
     .search-container {
@@ -99,73 +101,66 @@
       height: 18px;
     }
 
-    /* Column Container Layout */
+    /* Column Grid Layout: Side-by-side on PC */
     .dashboard {
       padding: 24px 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 36px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      align-items: start;
     }
 
     .column-section {
       display: flex;
       flex-direction: column;
       gap: 16px;
+      background: rgba(20, 20, 31, 0.3);
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
     }
 
     .section-title {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 700;
       display: flex;
       align-items: center;
       gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .section-title::before {
       content: '';
       width: 4px;
-      height: 20px;
+      height: 18px;
       background: linear-gradient(180deg, var(--accent-red), var(--accent-purple));
       border-radius: 2px;
     }
 
-    /* Horizontal Movie Scroller */
-    .movie-row {
+    /* Vertical Cards List inside Columns */
+    .movie-column {
       display: flex;
-      gap: 18px;
-      overflow-x: auto;
-      padding-bottom: 12px;
-      scroll-behavior: smooth;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border-color) transparent;
-    }
-
-    .movie-row::-webkit-scrollbar {
-      height: 6px;
-    }
-
-    .movie-row::-webkit-scrollbar-thumb {
-      background: var(--border-color);
-      border-radius: 10px;
+      flex-direction: column;
+      gap: 16px;
     }
 
     /* Movie Cards */
     .movie-card {
-      min-width: 180px;
-      width: 180px;
-      height: 270px;
+      width: 100%;
+      height: 240px;
       background-color: var(--bg-card);
       border-radius: 12px;
       position: relative;
       cursor: pointer;
       overflow: hidden;
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-      flex-shrink: 0;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
       border: 1px solid var(--border-color);
+      flex-shrink: 0;
     }
 
     .movie-card:hover {
-      transform: translateY(-8px) scale(1.02);
+      transform: translateY(-4px) scale(1.01);
       box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
       border-color: rgba(255, 255, 255, 0.2);
     }
@@ -185,7 +180,7 @@
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: var(--accent-cyan);
       font-weight: 800;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       padding: 4px 8px;
       border-radius: 6px;
       z-index: 2;
@@ -197,7 +192,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 16px;
+      padding: 14px;
       background: linear-gradient(180deg, transparent 0%, rgba(10, 10, 15, 0.95) 100%);
       display: flex;
       flex-direction: column;
@@ -372,8 +367,8 @@
       font-weight: 600;
     }
 
-    /* Mobile Responsiveness */
-    @media (max-width: 768px) {
+    /* Mobile Layout: Stacked vertically one after the other */
+    @media (max-width: 992px) {
       header {
         padding: 12px 16px;
         flex-direction: column;
@@ -382,18 +377,12 @@
 
       .dashboard {
         padding: 16px;
+        grid-template-columns: 1fr;
         gap: 24px;
       }
 
       .movie-card {
-        min-width: 140px;
-        width: 140px;
-        height: 210px;
-      }
-
-      .badge-rating {
-        font-size: 0.75rem;
-        padding: 2px 6px;
+        height: 200px;
       }
 
       .modal-body {
@@ -419,22 +408,22 @@
   <main class="dashboard">
     <section class="column-section">
       <h2 class="section-title">For You</h2>
-      <div class="movie-row" id="row-foryou"></div>
+      <div class="movie-column" id="row-foryou"></div>
     </section>
 
     <section class="column-section">
       <h2 class="section-title">Recommended</h2>
-      <div class="movie-row" id="row-recommended"></div>
+      <div class="movie-column" id="row-recommended"></div>
     </section>
 
     <section class="column-section">
       <h2 class="section-title">Remix</h2>
-      <div class="movie-row" id="row-remix"></div>
+      <div class="movie-column" id="row-remix"></div>
     </section>
 
     <section class="column-section">
       <h2 class="section-title">Top Rated</h2>
-      <div class="movie-row" id="row-toprated"></div>
+      <div class="movie-column" id="row-toprated"></div>
     </section>
   </main>
 
@@ -488,172 +477,6 @@
     </div>
   </div>
 
-  <script>
-    // --- Mock User Profile Preferences ---
-    const userPreferences = {
-      actors: { "Leonardo DiCaprio": 9.5, "Christian Bale": 9.0, "Cillian Murphy": 8.5 },
-      directors: { "Christopher Nolan": 9.5, "Denis Villeneuve": 9.0 },
-      genres: { "Sci-Fi": 9.0, "Thriller": 8.5, "Drama": 7.0 },
-      keywords: { "mind-bending": 9.5, "space": 9.0, "dystopia": 8.5 }
-    };
-
-    // --- Weighted Formula Engine ---
-    function calculateMovieOffset(movie) {
-      let totalWeightedScore = 0;
-      let totalWeightAccumulator = 0;
-
-      // 1. Actors: Top 10 with position weights
-      const actorWeights = [0.20, 0.20, 0.20, 0.10, 0.10, 0.10, 0.025, 0.025, 0.025, 0.025];
-      movie.cast.slice(0, 10).forEach((actor, idx) => {
-        if (userPreferences.actors[actor] !== undefined) {
-          const w = actorWeights[idx];
-          totalWeightedScore += userPreferences.actors[actor] * w;
-          totalWeightAccumulator += w;
-        }
-      });
-
-      // 2. Director (1.0x)
-      if (movie.director && userPreferences.directors[movie.director] !== undefined) {
-        totalWeightedScore += userPreferences.directors[movie.director] * 1.0;
-        totalWeightAccumulator += 1.0;
-      }
-
-      // 3. Genres (1.5x total split)
-      const matchingGenres = movie.genres.filter(g => userPreferences.genres[g] !== undefined);
-      if (matchingGenres.length > 0) {
-        const weightPerGenre = 1.5 / matchingGenres.length;
-        matchingGenres.forEach(g => {
-          totalWeightedScore += userPreferences.genres[g] * weightPerGenre;
-          totalWeightAccumulator += weightPerGenre;
-        });
-      }
-
-      // 4. Keywords (2.0x total split)
-      const matchingKeywords = movie.keywords.filter(k => userPreferences.keywords[k] !== undefined);
-      if (matchingKeywords.length > 0) {
-        const weightPerKeyword = 2.0 / matchingKeywords.length;
-        matchingKeywords.forEach(k => {
-          totalWeightedScore += userPreferences.keywords[k] * weightPerKeyword;
-          totalWeightAccumulator += weightPerKeyword;
-        });
-      }
-
-      if (totalWeightAccumulator === 0) return 0;
-      const avgElementScore = totalWeightedScore / totalWeightAccumulator;
-      return avgElementScore - 5; // Yields -5 to +5 offset
-    }
-
-    // Convert score to 0–7 Badge scale as required
-    function formatBadgeScore(forYouScore) {
-      return (Math.max(0, Math.min(10, forYouScore)) * (7 / 10)).toFixed(1);
-    }
-
-    // --- Seed Datasets (20 items per column simulated) ---
-    const seedMovies = [
-      { id: 1, title: "Inception", year: 2010, tmdbRating: 8.4, director: "Christopher Nolan", cast: ["Leonardo DiCaprio", "Joseph Gordon-Levitt", "Elliot Page", "Tom Hardy"], genres: ["Sci-Fi", "Action"], keywords: ["mind-bending", "subconscious", "heist"], backdrop: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200", poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400", platforms: ["Netflix", "Max"], overview: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O." },
-      { id: 2, title: "Interstellar", year: 2014, tmdbRating: 8.6, director: "Christopher Nolan", cast: ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"], genres: ["Sci-Fi", "Drama"], keywords: ["space", "black hole", "time dilation"], backdrop: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200", poster: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400", platforms: ["Paramount+", "Prime"], overview: "When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, Joseph Cooper, is tasked to pilot a spacecraft, along with a team of researchers, to find a new planet for humans." },
-      { id: 3, title: "Dune: Part Two", year: 2024, tmdbRating: 8.5, director: "Denis Villeneuve", cast: ["Timothée Chalamet", "Zendaya", "Rebecca Ferguson"], genres: ["Sci-Fi", "Adventure"], keywords: ["dystopia", "desert", "prophecy"], backdrop: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200", poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400", platforms: ["Max"], overview: "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family." },
-      { id: 4, title: "The Dark Knight", year: 2008, tmdbRating: 8.5, director: "Christopher Nolan", cast: ["Christian Bale", "Heath Ledger", "Aaron Eckhart"], genres: ["Action", "Crime", "Thriller"], keywords: ["vigilante", "chaos", "gotham"], backdrop: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200", poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400", platforms: ["Max", "4K Rent"], overview: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice." },
-      { id: 5, title: "Oppenheimer", year: 2023, tmdbRating: 8.1, director: "Christopher Nolan", cast: ["Cillian Murphy", "Emily Blunt", "Matt Damon"], genres: ["Drama", "History"], keywords: ["atomic bomb", "physics", "biography"], backdrop: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=1200", poster: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400", platforms: ["Peacock"], overview: "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb." }
-    ];
-
-    // Helper to generate 20 items per list by replicating & tweaking candidates dynamically
-    function generateDataset(baseList) {
-      const fullSet = [];
-      for (let i = 0; i < 20; i++) {
-        const item = { ...baseList[i % baseList.length] };
-        item.id = i + 100;
-        item.title = `${item.title} ${i > 4 ? '#' + (i + 1) : ''}`;
-        const offset = calculateMovieOffset(item);
-        item.forYouScore = Math.max(0, Math.min(10, item.tmdbRating + offset));
-        item.badgeNumber = formatBadgeScore(item.forYouScore);
-        fullSet.push(item);
-      }
-      return fullSet;
-    }
-
-    // --- Render Functions ---
-    function createMovieCard(movie) {
-      const card = document.createElement('div');
-      card.className = 'movie-card';
-      card.innerHTML = `
-        <div class="badge-rating">${movie.badgeNumber}</div>
-        <img class="movie-poster" src="${movie.poster}" alt="${movie.title}" loading="lazy">
-        <div class="card-overlay">
-          <div class="movie-title">${movie.title}</div>
-          <div class="movie-meta">
-            <span>${movie.year}</span>
-            <span>★ ${movie.forYouScore.toFixed(1)}</span>
-          </div>
-        </div>
-      `;
-      card.addEventListener('click', () => openModal(movie));
-      return card;
-    }
-
-    function renderRow(rowId, movies) {
-      const rowContainer = document.getElementById(rowId);
-      rowContainer.innerHTML = '';
-      movies.forEach(movie => rowContainer.appendChild(createMovieCard(movie)));
-    }
-
-    // --- Modal Handler ---
-    const modal = document.getElementById('movieModal');
-    const closeModalBtn = document.getElementById('closeModal');
-
-    function openModal(movie) {
-      document.getElementById('modalTitle').innerText = `${movie.title} (${movie.year})`;
-      document.getElementById('modalSubhead').innerText = `${movie.genres.join(' • ')}`;
-      document.getElementById('modalHero').style.backgroundImage = `url('${movie.backdrop}')`;
-      document.getElementById('modalForYouScore').innerText = movie.forYouScore.toFixed(1);
-      document.getElementById('modalBaseScore').innerText = movie.tmdbRating.toFixed(1);
-      document.getElementById('modalOverview').innerText = movie.overview;
-      document.getElementById('modalDirector').innerText = movie.director;
-      document.getElementById('modalCast').innerText = movie.cast.join(', ');
-      document.getElementById('modalKeywords').innerText = movie.keywords.map(k => `#${k}`).join(' ');
-
-      const platformContainer = document.getElementById('modalPlatforms');
-      platformContainer.innerHTML = '';
-      movie.platforms.forEach(p => {
-        const badge = document.createElement('span');
-        badge.className = 'platform-badge';
-        badge.innerText = p;
-        platformContainer.appendChild(badge);
-      });
-
-      modal.classList.add('active');
-    }
-
-    closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) modal.classList.remove('active');
-    });
-
-    // --- Search functionality ---
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase().trim();
-      const allRows = ['row-foryou', 'row-recommended', 'row-remix', 'row-toprated'];
-      
-      allRows.forEach(rowId => {
-        const container = document.getElementById(rowId);
-        Array.from(container.children).forEach(card => {
-          const title = card.querySelector('.movie-title').innerText.toLowerCase();
-          card.style.display = title.includes(query) ? 'block' : 'none';
-        });
-      });
-    });
-
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-      const dataset = generateDataset(seedMovies);
-      
-      // Render 20 items per section column
-      renderRow('row-foryou', [...dataset].sort((a,b) => b.forYouScore - a.forYouScore));
-      renderRow('row-recommended', dataset);
-      renderRow('row-remix', [...dataset].sort(() => 0.5 - Math.random()));
-      renderRow('row-toprated', [...dataset].sort((a,b) => b.tmdbRating - a.tmdbRating));
-    });
-    <script src="test.js"></script>
-  </script>
+  <script src="test.js"></script>
 </body>
-
+</html>
