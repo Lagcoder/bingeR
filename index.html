@@ -1,15 +1,659 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worker Test Page</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bingeR — Personalized Movie Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-surface: #14141f;
+      --bg-card: #1d1d2c;
+      --accent-red: #e50914;
+      --accent-purple: #7b2cbf;
+      --accent-cyan: #00f5d4;
+      --text-main: #f8f9fa;
+      --text-muted: #a0a0b8;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --glass: rgba(20, 20, 31, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 50px;
+    }
+
+    /* Header & Navbar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 1.6rem;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    .brand span {
+      color: var(--accent-red);
+    }
+
+    .search-container {
+      position: relative;
+      flex: 1;
+      max-width: 500px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 20px 12px 45px;
+      border-radius: 30px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 15px rgba(123, 44, 191, 0.3);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      fill: var(--text-muted);
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Column Container Layout */
+    .dashboard {
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    .column-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, var(--accent-red), var(--accent-purple));
+      border-radius: 2px;
+    }
+
+    /* Horizontal Movie Scroller */
+    .movie-row {
+      display: flex;
+      gap: 18px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color) transparent;
+    }
+
+    .movie-row::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .movie-row::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 10px;
+    }
+
+    /* Movie Cards */
+    .movie-card {
+      min-width: 180px;
+      width: 180px;
+      height: 270px;
+      background-color: var(--bg-card);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+      flex-shrink: 0;
+      border: 1px solid var(--border-color);
+    }
+
+    .movie-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .movie-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .badge-rating {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--accent-cyan);
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      z-index: 2;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .card-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      background: linear-gradient(180deg, transparent 0%, rgba(10, 10, 15, 0.95) 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .movie-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .movie-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: var(--bg-surface);
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      border-radius: 16px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-hero {
+      position: relative;
+      height: 280px;
+      width: 100%;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .modal-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, var(--bg-surface) 0%, transparent 100%);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    .modal-body {
+      padding: 24px 32px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .modal-header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .scores-container {
+      display: flex;
+      gap: 16px;
+    }
+
+    .score-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .score-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .score-value.for-you { color: var(--accent-cyan); }
+    .score-value.tmdb { color: #ffbe0b; }
+
+    .score-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-description {
+      line-height: 1.6;
+      color: #d0d0e0;
+      font-size: 0.95rem;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .detail-item h4 {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .detail-item p {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .platforms-list {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .platform-badge {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      header {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .dashboard {
+        padding: 16px;
+        gap: 24px;
+      }
+
+      .movie-card {
+        min-width: 140px;
+        width: 140px;
+        height: 210px;
+      }
+
+      .badge-rating {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+      }
+
+      .modal-body {
+        padding: 16px;
+      }
+
+      .modal-hero {
+        height: 180px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>Testing Cloudflare Worker Proxy</h1>
-    <p>Check your browser console (F12) to view the API response.</p>
 
-    <!-- Connects to test.js in the same folder -->
+  <header>
+    <a href="#" class="brand">binge<span>R</span></a>
+    <div class="search-container">
+      <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search movies, actors, directors, keywords...">
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <section class="column-section">
+      <h2 class="section-title">For You</h2>
+      <div class="movie-row" id="row-foryou"></div>
+    </section>
+
+    <section class="column-section">
+      <h2 class="section-title">Recommended</h2>
+      <div class="movie-row" id="row-recommended"></div>
+    </section>
+
+    <section class="column-section">
+      <h2 class="section-title">Remix</h2>
+      <div class="movie-row" id="row-remix"></div>
+    </section>
+
+    <section class="column-section">
+      <h2 class="section-title">Top Rated</h2>
+      <div class="movie-row" id="row-toprated"></div>
+    </section>
+  </main>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop" id="movieModal">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModal">&times;</button>
+      <div class="modal-hero" id="modalHero">
+        <div class="modal-hero-overlay"></div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-header-info">
+          <div>
+            <h1 id="modalTitle" style="font-size: 1.8rem; margin-bottom: 4px;"></h1>
+            <p id="modalSubhead" style="color: var(--text-muted); font-size: 0.9rem;"></p>
+          </div>
+          <div class="scores-container">
+            <div class="score-box">
+              <div class="score-value for-you" id="modalForYouScore">0.0</div>
+              <div class="score-label">For You</div>
+            </div>
+            <div class="score-box">
+              <div class="score-value tmdb" id="modalBaseScore">0.0</div>
+              <div class="score-label">TMDB Base</div>
+            </div>
+          </div>
+        </div>
+
+        <p class="modal-description" id="modalOverview"></p>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <h4>Director</h4>
+            <p id="modalDirector"></p>
+          </div>
+          <div class="detail-item">
+            <h4>Top Cast</h4>
+            <p id="modalCast"></p>
+          </div>
+          <div class="detail-item">
+            <h4>Keywords</h4>
+            <p id="modalKeywords"></p>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">Available On</h4>
+          <div class="platforms-list" id="modalPlatforms"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Mock User Profile Preferences ---
+    const userPreferences = {
+      actors: { "Leonardo DiCaprio": 9.5, "Christian Bale": 9.0, "Cillian Murphy": 8.5 },
+      directors: { "Christopher Nolan": 9.5, "Denis Villeneuve": 9.0 },
+      genres: { "Sci-Fi": 9.0, "Thriller": 8.5, "Drama": 7.0 },
+      keywords: { "mind-bending": 9.5, "space": 9.0, "dystopia": 8.5 }
+    };
+
+    // --- Weighted Formula Engine ---
+    function calculateMovieOffset(movie) {
+      let totalWeightedScore = 0;
+      let totalWeightAccumulator = 0;
+
+      // 1. Actors: Top 10 with position weights
+      const actorWeights = [0.20, 0.20, 0.20, 0.10, 0.10, 0.10, 0.025, 0.025, 0.025, 0.025];
+      movie.cast.slice(0, 10).forEach((actor, idx) => {
+        if (userPreferences.actors[actor] !== undefined) {
+          const w = actorWeights[idx];
+          totalWeightedScore += userPreferences.actors[actor] * w;
+          totalWeightAccumulator += w;
+        }
+      });
+
+      // 2. Director (1.0x)
+      if (movie.director && userPreferences.directors[movie.director] !== undefined) {
+        totalWeightedScore += userPreferences.directors[movie.director] * 1.0;
+        totalWeightAccumulator += 1.0;
+      }
+
+      // 3. Genres (1.5x total split)
+      const matchingGenres = movie.genres.filter(g => userPreferences.genres[g] !== undefined);
+      if (matchingGenres.length > 0) {
+        const weightPerGenre = 1.5 / matchingGenres.length;
+        matchingGenres.forEach(g => {
+          totalWeightedScore += userPreferences.genres[g] * weightPerGenre;
+          totalWeightAccumulator += weightPerGenre;
+        });
+      }
+
+      // 4. Keywords (2.0x total split)
+      const matchingKeywords = movie.keywords.filter(k => userPreferences.keywords[k] !== undefined);
+      if (matchingKeywords.length > 0) {
+        const weightPerKeyword = 2.0 / matchingKeywords.length;
+        matchingKeywords.forEach(k => {
+          totalWeightedScore += userPreferences.keywords[k] * weightPerKeyword;
+          totalWeightAccumulator += weightPerKeyword;
+        });
+      }
+
+      if (totalWeightAccumulator === 0) return 0;
+      const avgElementScore = totalWeightedScore / totalWeightAccumulator;
+      return avgElementScore - 5; // Yields -5 to +5 offset
+    }
+
+    // Convert score to 0–7 Badge scale as required
+    function formatBadgeScore(forYouScore) {
+      return (Math.max(0, Math.min(10, forYouScore)) * (7 / 10)).toFixed(1);
+    }
+
+    // --- Seed Datasets (20 items per column simulated) ---
+    const seedMovies = [
+      { id: 1, title: "Inception", year: 2010, tmdbRating: 8.4, director: "Christopher Nolan", cast: ["Leonardo DiCaprio", "Joseph Gordon-Levitt", "Elliot Page", "Tom Hardy"], genres: ["Sci-Fi", "Action"], keywords: ["mind-bending", "subconscious", "heist"], backdrop: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200", poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400", platforms: ["Netflix", "Max"], overview: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O." },
+      { id: 2, title: "Interstellar", year: 2014, tmdbRating: 8.6, director: "Christopher Nolan", cast: ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"], genres: ["Sci-Fi", "Drama"], keywords: ["space", "black hole", "time dilation"], backdrop: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200", poster: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400", platforms: ["Paramount+", "Prime"], overview: "When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, Joseph Cooper, is tasked to pilot a spacecraft, along with a team of researchers, to find a new planet for humans." },
+      { id: 3, title: "Dune: Part Two", year: 2024, tmdbRating: 8.5, director: "Denis Villeneuve", cast: ["Timothée Chalamet", "Zendaya", "Rebecca Ferguson"], genres: ["Sci-Fi", "Adventure"], keywords: ["dystopia", "desert", "prophecy"], backdrop: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200", poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400", platforms: ["Max"], overview: "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family." },
+      { id: 4, title: "The Dark Knight", year: 2008, tmdbRating: 8.5, director: "Christopher Nolan", cast: ["Christian Bale", "Heath Ledger", "Aaron Eckhart"], genres: ["Action", "Crime", "Thriller"], keywords: ["vigilante", "chaos", "gotham"], backdrop: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200", poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400", platforms: ["Max", "4K Rent"], overview: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice." },
+      { id: 5, title: "Oppenheimer", year: 2023, tmdbRating: 8.1, director: "Christopher Nolan", cast: ["Cillian Murphy", "Emily Blunt", "Matt Damon"], genres: ["Drama", "History"], keywords: ["atomic bomb", "physics", "biography"], backdrop: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=1200", poster: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400", platforms: ["Peacock"], overview: "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb." }
+    ];
+
+    // Helper to generate 20 items per list by replicating & tweaking candidates dynamically
+    function generateDataset(baseList) {
+      const fullSet = [];
+      for (let i = 0; i < 20; i++) {
+        const item = { ...baseList[i % baseList.length] };
+        item.id = i + 100;
+        item.title = `${item.title} ${i > 4 ? '#' + (i + 1) : ''}`;
+        const offset = calculateMovieOffset(item);
+        item.forYouScore = Math.max(0, Math.min(10, item.tmdbRating + offset));
+        item.badgeNumber = formatBadgeScore(item.forYouScore);
+        fullSet.push(item);
+      }
+      return fullSet;
+    }
+
+    // --- Render Functions ---
+    function createMovieCard(movie) {
+      const card = document.createElement('div');
+      card.className = 'movie-card';
+      card.innerHTML = `
+        <div class="badge-rating">${movie.badgeNumber}</div>
+        <img class="movie-poster" src="${movie.poster}" alt="${movie.title}" loading="lazy">
+        <div class="card-overlay">
+          <div class="movie-title">${movie.title}</div>
+          <div class="movie-meta">
+            <span>${movie.year}</span>
+            <span>★ ${movie.forYouScore.toFixed(1)}</span>
+          </div>
+        </div>
+      `;
+      card.addEventListener('click', () => openModal(movie));
+      return card;
+    }
+
+    function renderRow(rowId, movies) {
+      const rowContainer = document.getElementById(rowId);
+      rowContainer.innerHTML = '';
+      movies.forEach(movie => rowContainer.appendChild(createMovieCard(movie)));
+    }
+
+    // --- Modal Handler ---
+    const modal = document.getElementById('movieModal');
+    const closeModalBtn = document.getElementById('closeModal');
+
+    function openModal(movie) {
+      document.getElementById('modalTitle').innerText = `${movie.title} (${movie.year})`;
+      document.getElementById('modalSubhead').innerText = `${movie.genres.join(' • ')}`;
+      document.getElementById('modalHero').style.backgroundImage = `url('${movie.backdrop}')`;
+      document.getElementById('modalForYouScore').innerText = movie.forYouScore.toFixed(1);
+      document.getElementById('modalBaseScore').innerText = movie.tmdbRating.toFixed(1);
+      document.getElementById('modalOverview').innerText = movie.overview;
+      document.getElementById('modalDirector').innerText = movie.director;
+      document.getElementById('modalCast').innerText = movie.cast.join(', ');
+      document.getElementById('modalKeywords').innerText = movie.keywords.map(k => `#${k}`).join(' ');
+
+      const platformContainer = document.getElementById('modalPlatforms');
+      platformContainer.innerHTML = '';
+      movie.platforms.forEach(p => {
+        const badge = document.createElement('span');
+        badge.className = 'platform-badge';
+        badge.innerText = p;
+        platformContainer.appendChild(badge);
+      });
+
+      modal.classList.add('active');
+    }
+
+    closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('active');
+    });
+
+    // --- Search functionality ---
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const allRows = ['row-foryou', 'row-recommended', 'row-remix', 'row-toprated'];
+      
+      allRows.forEach(rowId => {
+        const container = document.getElementById(rowId);
+        Array.from(container.children).forEach(card => {
+          const title = card.querySelector('.movie-title').innerText.toLowerCase();
+          card.style.display = title.includes(query) ? 'block' : 'none';
+        });
+      });
+    });
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const dataset = generateDataset(seedMovies);
+      
+      // Render 20 items per section column
+      renderRow('row-foryou', [...dataset].sort((a,b) => b.forYouScore - a.forYouScore));
+      renderRow('row-recommended', dataset);
+      renderRow('row-remix', [...dataset].sort(() => 0.5 - Math.random()));
+      renderRow('row-toprated', [...dataset].sort((a,b) => b.tmdbRating - a.tmdbRating));
+    });
     <script src="test.js"></script>
+  </script>
 </body>
-</html>
+
