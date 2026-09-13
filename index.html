@@ -51,7 +51,6 @@
       gap: 20px;
     }
 
-    /* Tightened Brand Logo */
     .brand {
       display: flex;
       align-items: center;
@@ -101,7 +100,7 @@
       height: 18px;
     }
 
-    /* Column Grid Layout: Side-by-side on PC */
+    /* Column Grid Layout */
     .dashboard {
       padding: 24px 32px;
       display: grid;
@@ -138,17 +137,17 @@
       border-radius: 2px;
     }
 
-    /* Vertical Cards List inside Columns */
     .movie-column {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    /* Movie Cards: Standard vertical aspect ratio sizing */
+    /* Movie Cards: Standard Vertical Movie Aspect Ratio (2:3) */
     .movie-card {
       width: 100%;
-      aspect-ratio: 2/3;
+      aspect-ratio: 2 / 3;
+      height: auto;
       background-color: var(--bg-card);
       border-radius: 12px;
       position: relative;
@@ -171,6 +170,7 @@
       object-fit: cover;
     }
 
+    /* Top Left Badge: For You Rating */
     .badge-rating {
       position: absolute;
       top: 10px;
@@ -212,6 +212,12 @@
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
+      align-items: center;
+    }
+
+    .base-rating-text {
+      color: #ffbe0b;
+      font-weight: 600;
     }
 
     /* Modal Styling */
@@ -249,10 +255,12 @@
       flex-direction: column;
     }
 
+    /* Standard Widescreen Movie Backdrop Hero */
     .modal-hero {
       position: relative;
-      height: 280px;
       width: 100%;
+      aspect-ratio: 16 / 9;
+      max-height: 320px;
       background-size: cover;
       background-position: center;
     }
@@ -367,7 +375,6 @@
       font-weight: 600;
     }
 
-    /* Mobile Layout: Stacked vertically one after the other */
     @media (max-width: 992px) {
       header {
         padding: 12px 16px;
@@ -383,10 +390,6 @@
 
       .modal-body {
         padding: 16px;
-      }
-
-      .modal-hero {
-        height: 180px;
       }
     }
   </style>
@@ -438,12 +441,12 @@
           </div>
           <div class="scores-container">
             <div class="score-box">
-              <div class="score-value for-you" id="modalForYouScore">0.0</div>
+              <div class="score-value for-you" id="modalForYouScore">★ 0.0/7</div>
               <div class="score-label">For You</div>
             </div>
             <div class="score-box">
-              <div class="score-value tmdb" id="modalBaseScore">0.0</div>
-              <div class="score-label">TMDB Base</div>
+              <div class="score-value tmdb" id="modalBaseScore">★ 0.0/7</div>
+              <div class="score-label">Base Rating</div>
             </div>
           </div>
         </div>
