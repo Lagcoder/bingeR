@@ -63,7 +63,7 @@ function calculateMovieOffset(movie) {
 
 // Halve raw TMDB ratings (out of 10 -> out of 5/7 scale) and format with 0.1 precision capped at 7.0
 function formatRating(rawScore) {
-  const score = Math.min(5.0, Math.max(0, rawScore));
+  const score = Math.min(7.0, Math.max(0, rawScore));
   return score.toFixed(1);
 }
 
